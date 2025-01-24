@@ -37,6 +37,10 @@ split_data = tokenized_dataset.train_test_split(test_size=0.1)
 train_dataset = split_data["train"]
 eval_dataset = split_data["test"]
 
+# Take only 3 or 4 items for quick testing
+train_dataset = train_dataset.select(range(3))  # Take the first 3 items
+eval_dataset = eval_dataset.select(range(4))
+
 # Set dataset format for PyTorch
 train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 eval_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
@@ -55,7 +59,7 @@ model = get_peft_model(model, lora_config)
 
 # Training arguments
 training_args = TrainingArguments(
-    output_dir=output_path,
+    output_dir=".",
     evaluation_strategy="steps",
     eval_steps=500,
     save_steps=1000,
@@ -63,13 +67,14 @@ training_args = TrainingArguments(
     logging_steps=100,
     per_device_train_batch_size=4,
     per_device_eval_batch_size=4,
-    num_train_epochs=12,
+    num_train_epochs=3,
     learning_rate=5e-5,
     weight_decay=0.01,
     save_total_limit=2,
     fp16=torch.cuda.is_available(),
     report_to="none",  # Disable reporting to external tools like WandB
     load_best_model_at_end=True,
+    save_strategy="steps",
 )
 
 # Trainer
@@ -85,6 +90,6 @@ trainer = Trainer(
 trainer.train()
 
 # Save the LoRA fine-tuned model
-trainer.save_model(output_path)
+trainer.save_model("./saved_model")
 
 print(f"Training complete. Model saved at {output_path}")
