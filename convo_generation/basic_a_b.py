@@ -3,7 +3,6 @@ import pandas as pd
 
 openai.api_key = ''
 
-
 class SyntheticSpanishTutorData():
     def __init__(self, convo_theme):
         self.conversation = []
@@ -37,12 +36,12 @@ class SyntheticSpanishTutorData():
     
     def write_to_parquet(self):
          df = pd.DataFrame.from_dict(self.conversation)
-         df.to_parquet("1000_synthetic_spanish_tutor_data_peliculas_02.parquet")
+         df.to_parquet(f"1000_synthetic_spanish_tutor_data_idioms_02.parquet")
          print("Synthetic Spanish Tutor Data saved to parquet file.")
 
 
 def main():
-     convo_theme = 'peliculas'
+     convo_theme = 'Idioms & Proverbs'
      convo = SyntheticSpanishTutorData(convo_theme=convo_theme)
      entry = f"Hoy, vamos a hablar sobre {convo_theme}"
      while len(convo.conversation) <= 1000:

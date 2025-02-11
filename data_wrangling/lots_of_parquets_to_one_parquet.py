@@ -1,12 +1,12 @@
 import os
 import pandas as pd
 
-output_filename = 'some_file.parquet'
-filename_selector_segment = '1000_' #example in which all parquet files include the characters 1000_
+output_filename = 'spanish-convos-simple.parquet'
+filename_selector_segment = 'conversations' #example in which all parquet files include the characters 1000_
 
 # column names from existing parquet files; add more as needed
-column_a_name = 'student'
-column_b_name = 'tutor'
+column_a_name = 'speaker_a'
+column_b_name = 'speaker_b'
 
 def main():
 
