@@ -5,9 +5,9 @@ from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, Seq2SeqTrainingArguments, Seq2SeqTrainer, DataCollatorForSeq2Seq
 
 # Model and dataset configuration
-model_name = 'google/flan-t5-small'
-dataset_name = 'jeff-vincent/1k-spanish-convo-01'
-output_path = './fine-tuned-flan-t5-small-spanish-convo-01'
+model_name = 'google/flan-t5-large'
+dataset_name = 'jeff-vincent/14k_spanish_convo'
+output_path = '/content/drive/MyDrive/colab_output/flan-t5-spanish-tutor-01'
 
 # Load tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -43,16 +43,16 @@ train_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "
 eval_dataset.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
 # Training arguments
-batch_size = 128
+batch_size = 4
 args = Seq2SeqTrainingArguments(
     output_path,
     evaluation_strategy = "epoch",
-    learning_rate=2e-3,
+    learning_rate=5e-5,
     per_device_train_batch_size=batch_size,
     per_device_eval_batch_size=batch_size,
     weight_decay=0.01,
-    save_total_limit=3,
-    num_train_epochs=20,
+    save_total_limit=1,
+    num_train_epochs=10,
     predict_with_generate=True,
     push_to_hub=False,
 )

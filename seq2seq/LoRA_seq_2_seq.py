@@ -3,7 +3,7 @@ from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, TrainingArguments, Trainer
 from peft import LoraConfig, get_peft_model
 
-model_name = 'flan-t5-large'
+model_name = 'google/flan-t5-xl'
 dataset_name = 'jeff-vincent/1k-spanish-tutor-corrections'
 output_path = './LoRA-trained-spanish-tutor'
 
@@ -24,12 +24,20 @@ dataset = load_dataset(dataset_name, split="train")
 
 # Tokenization function
 def preprocess_function(examples):
-    inputs = examples["student"]
-    targets = examples["tutor"]
-    model_inputs = tokenizer(inputs, truncation=True, padding=True)
+    # Convert strings to lists for batching
+    inputs = [str(e) for e in examples["student"]]
+    targets = [str(t) for t in examples["tutor"]]
 
-    with tokenizer.as_target_tokenizer():
-        labels = tokenizer(targets, truncation=True, padding=True)
+    # Tokenize inputs
+    model_inputs = tokenizer(inputs, max_length=512, padding='max_length', truncation=True)
+    
+    # Tokenize targets with the `text_target` keyword argument
+    labels = tokenizer(text_target=targets, max_length=512, padding='max_length', truncation=True)
+
+    # Replace pad tokens with -100 in labels to ignore them in loss calculation
+    labels["input_ids"] = [
+        [(l if l != tokenizer.pad_token_id else -100) for l in label] for label in labels["input_ids"]
+    ]
 
     model_inputs["labels"] = labels["input_ids"]
     return model_inputs
@@ -41,10 +49,6 @@ tokenized_dataset = dataset.map(preprocess_function, batched=True, remove_column
 split_data = tokenized_dataset.train_test_split(test_size=0.1)
 train_dataset = split_data["train"]
 eval_dataset = split_data["test"]
-
-# Set dataset format for PyTorch
-train_dataset.set_format(type="torch")
-eval_dataset.set_format(type="torch")
 
 # LoRA configuration
 lora_config = LoraConfig(
@@ -70,7 +74,8 @@ training_args = TrainingArguments(
     num_train_epochs=num_train_epochs,
     learning_rate=learning_rate,
     weight_decay=0.01,
-    fp16=torch.cuda.is_available(),
+    fp16=False,
+    bf16=True,
     report_to="none",
 )
 
